@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:focus_flow/controller/Is_number.dart';
 
 import '../../controller/get_days_with_moth.dart';
 import 'frame.dart';
@@ -77,12 +78,30 @@ class _CalendarState extends State<Calendar> {
           childAspectRatio: squareWidth / squareHeight, // делаем квадраты
           children: List.generate(49, (index) {
 
-
-            return CalendarFrame(
-              index: index,
-              txt: _getLabel(index),
-              colors: markedColors[index] ?? [],
-              onTap: () => _onFrameTap(index),
+            var text = _getLabel(index);
+            if (!isNumber(text)){
+                  return CalendarFrame(
+                    index: index,
+                    txt: _getLabel(index),
+                    colors: markedColors[index] ?? [],
+                    onTap: () => _onFrameTap(index),
+                  );
+            }
+            return Container(
+              margin: const EdgeInsets.all(8), // отступы между элементами
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: Colors.blue, // цвет обводки
+                  width: 2,           // толщина линии
+                ),
+                borderRadius: BorderRadius.circular(8), // скругление углов
+              ),
+              child: CalendarFrame(
+                index: index,
+                txt: text,
+                colors: markedColors[index] ?? [],
+                onTap: () => _onFrameTap(index),
+              ),
             );
           }),
         );
