@@ -20,10 +20,53 @@ class CalendarTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: ()=> onTap(backgroundColor),
-      child: Container(
-        color: getColor(typeColors, backgroundColor), // используем переданный цвет
-        child: ListTile(title: Text(name), subtitle: Text(type)),
+      onTap: () => onTap(backgroundColor),
+      child: Card(
+        color: getColor(typeColors, backgroundColor),
+        child: ListTile(
+          leading: CircleAvatar(
+            backgroundColor: Colors.white,
+            child: Icon(
+              Icons.check,
+              color: getColor(typeColors, backgroundColor),
+            ),
+          ),
+          title: Text(name),
+          subtitle: Text(type),
+          trailing: GestureDetector(
+            onTap: () {
+              showDialog(
+                context: context,
+                builder: (context) {
+                  return Dialog(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text("Моё кастомное окно", style: TextStyle(fontSize: 18)),
+                          const SizedBox(height: 12),
+                          ElevatedButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: const Text("Закрыть"),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              );
+            },
+            child: CircleAvatar(
+              backgroundColor: Colors.white,
+              radius: 10,
+              child: const Icon(Icons.arrow_drop_down, size: 20),
+            ),
+          ),
+        ),
       ),
     );
   }

@@ -19,23 +19,35 @@ class CalendarFrame extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: txt=="" || !isNumber(txt) ? (){} :onTap,
-      child: Column(
-        children: [
-          Text(txt),
-          Row(
-            children:
-                colors.map((id) {
-                  return Container(
-                    width: 20,
-                    height: 20,
-                    margin: const EdgeInsets.all(2),
-                    color: getColor(typeColors, id),
-                  );
-                }).toList(),
-          ),
-        ],
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(
+          8,
+        ),
+        color: colors.contains(0) ? Colors.green.withValues(alpha: 0.55) : Colors.transparent,
+      ),
+      child: InkWell(
+        onTap: txt == "" || !isNumber(txt) ? () {} : onTap,
+        child: Column(
+          children: [
+            SizedBox(
+              width: MediaQuery.of(context).size.width,
+              height: 35.0,
+              child: Center(child: Text(txt, style: TextStyle(fontSize: 19))),
+            ),
+            Row(
+              children:
+                  colors.map((id) {
+                    return Container(
+                      width: 20,
+                      height: 20,
+                      margin: const EdgeInsets.all(2),
+                      color: getColor(typeColors, id),
+                    );
+                  }).toList(),
+            ),
+          ],
+        ),
       ),
     );
   }

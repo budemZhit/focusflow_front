@@ -39,26 +39,39 @@ class _ToDoListState extends State<ToDoList> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.orange,
-      body: ListView.builder(
-        itemCount: json.length,
-        itemBuilder: (context, index) {
-          String key = json.keys.elementAt(index);
-          String name = json[key]?["Name"] ?? "";
-          int colorIndex = json[key]?["Color"] ?? 0;
-
-          return CalendarTile(
-            type: key,
-            name: name,
-            backgroundColor: colorIndex,
-            onTap: widget.getColors,
-          );
-        },
+    return Container(
+      decoration: BoxDecoration(
+        border: Border(
+          left: BorderSide(
+            color: Colors.grey,
+            width: 1,
+          ),
+          top: BorderSide(
+            color: Colors.grey,
+            width: 1,
+          ),
+        ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _addItemDialog,
-        child: const Icon(Icons.add),
+      child:Scaffold(
+        body: ListView.builder(
+          itemCount: json.length,
+          itemBuilder: (context, index) {
+            String key = json.keys.elementAt(index);
+            String name = json[key]?["Name"] ?? "";
+            int colorIndex = json[key]?["Color"] ?? 0;
+
+            return CalendarTile(
+              type: key,
+              name: name,
+              backgroundColor: colorIndex,
+              onTap: widget.getColors,
+            );
+          },
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: _addItemDialog,
+          child: const Icon(Icons.add),
+        ),
       ),
     );
   }
