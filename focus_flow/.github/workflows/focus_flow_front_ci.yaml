@@ -8,6 +8,7 @@ on:
       - debug
       - test
 
+
 jobs:
   build_and_push_docker:
     name: Сборка и публикация Docker образа
