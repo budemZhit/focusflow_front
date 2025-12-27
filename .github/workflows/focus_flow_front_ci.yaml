@@ -44,10 +44,10 @@ jobs:
           echo "TAG_SHA=${{ github.sha }}" >> $GITHUB_OUTPUT
 
       - name: Build Docker image
-        run: docker build -t ${{ steps.meta.outputs.IMAGE }}:${{ steps.meta.outputs.TAG_SHA }} .
+        run: docker build -t ${{ steps.meta.outputs.IMAGE | toLower }}:${{ steps.meta.outputs.TAG_SHA }} .
 
       - name: Push SHA tag
-        run: docker push ${{ steps.meta.outputs.IMAGE }}:${{ steps.meta.outputs.TAG_SHA }}
+        run: docker push ${{ steps.meta.outputs.IMAGE | toLower }}:${{ steps.meta.outputs.TAG_SHA }} .
 
   deploy_release_server:
     name: Деплой на сервер
