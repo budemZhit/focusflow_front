@@ -1,0 +1,73 @@
+name: Front workflow for FocusFlow
+
+on:
+  push:
+    branches:
+      - main
+      - release
+      - debug
+      - test
+
+jobs:
+  build_and_push_docker:
+    name: Сборка и публикация Docker образа
+    runs-on: ubuntu-latest
+
+    outputs:
+      image: ${{ steps.meta.outputs.IMAGE }}
+      tag_sha: ${{ steps.meta.outputs.TAG_SHA }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.0'
+
+      - name: Build Flutter Web
+        run: flutter build web --base-href /focus_flow/
+
+      - name: Login to GHCR
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Meta (теги образа)
+        id: meta
+        run: |
+          echo "IMAGE=ghcr.io/${{ github.repository }}/front" >> $GITHUB_OUTPUT
+          echo "TAG_SHA=${{ github.sha }}" >> $GITHUB_OUTPUT
+
+      - name: Build Docker image
+        run: docker build -t ${{ steps.meta.outputs.IMAGE }}:${{ steps.meta.outputs.TAG_SHA }} .
+
+      - name: Push SHA tag
+        run: docker push ${{ steps.meta.outputs.IMAGE }}:${{ steps.meta.outputs.TAG_SHA }}
+
+  deploy_release_server:
+    name: Деплой на сервер
+    runs-on: ubuntu-latest
+    needs: build_and_push_docker
+
+    steps:
+      - name: SSH deploy
+        uses: appleboy/ssh-action@v0.1.15
+        with:
+          host: ${{ secrets.SERVER_RELEASE_HOST }}
+          username: ${{ secrets.SERVER_RELEASE_USER }}
+          key: ${{ secrets.SERVER_RELEASE_SSH_KEY }}
+          port: ${{ secrets.SERVER_RELEASE_PORT }}
+          script: |
+            echo "Login GHCR..."
+            echo ${{ secrets.GHCR_TOKEN }} | docker login ghcr.io -u ${{ secrets.GHCR_USER }} --password-stdin
+
+            IMAGE=${{ needs.build_and_push_docker.outputs.image }}
+            TAG=${{ needs.build_and_push_docker.outputs.tag_sha }}
+
+            docker pull ${IMAGE}:${TAG}
+            docker rm -f focusflow_front || true
+            docker run -d --name focusflow_front --restart always -p 8080:8080 ${IMAGE}:${TAG}
