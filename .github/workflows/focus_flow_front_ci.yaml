@@ -81,5 +81,5 @@ jobs:
             echo "Stopping containers on port 8080..."
             docker ps -q --filter "publish=8080" | xargs -r docker stop
             docker ps -aq --filter "publish=8080" | xargs -r docker rm
-
-            docker run -d --name focusflow_front --restart always -p 8080:8080 ${IMAGE}:${TAG}
+            
+            docker run -d --name focusflow_front --restart always -p 8080:80 ${IMAGE}:${TAG}
