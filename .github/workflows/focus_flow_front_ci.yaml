@@ -14,8 +14,8 @@ jobs:
     name: Сборка и публикация Docker образа
     runs-on: ubuntu-latest
 
-    outputs:
-      image: ${{ steps.meta.outputs.IMAGE }}
+    outputs: 
+      image: ${{ steps.normalize.outputs.image_lc }} 
       tag_sha: ${{ steps.meta.outputs.TAG_SHA }}
 
     steps:
@@ -37,21 +37,24 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Meta (теги образа)
-        id: meta
+      - name: Meta (теги образа) 
+        id: meta 
         run: |
-          echo "IMAGE=ghcr.io/${{ github.repository }}/front" >> $GITHUB_OUTPUT
+          echo "IMAGE=ghcr.io/${{ github.repository_owner }}/focusflow_front" >> $GITHUB_OUTPUT 
           echo "TAG_SHA=${{ github.sha }}" >> $GITHUB_OUTPUT
 
-      - name: Normalize image name
+      - name: Normalize image name 
         run: echo "IMAGE_LC=$(echo '${{ steps.meta.outputs.IMAGE }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
       
-      - name: Build Docker image
+      - name: Export normalized image name 
+        id: normalize 
+        run: echo "image_lc=${IMAGE_LC}" >> $GITHUB_OUTPUT
+      
+      - name: Build Docker image 
         run: docker build -t ${{ env.IMAGE_LC }}:${{ steps.meta.outputs.TAG_SHA }} .
       
-      - name: Push SHA tag
+      - name: Push SHA tag 
         run: docker push ${{ env.IMAGE_LC }}:${{ steps.meta.outputs.TAG_SHA }}
-
 
   deploy_release_server:
     name: Деплой на сервер
