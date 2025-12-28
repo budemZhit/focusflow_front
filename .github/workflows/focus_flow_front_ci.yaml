@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
 
     outputs:
-      image: ${{ steps.meta.outputs.IMAGE }}
+      image: ${{ steps.normalize.outputs.image_lc }}
       tag_sha: ${{ steps.meta.outputs.TAG_SHA }}
 
     steps:
@@ -25,7 +25,7 @@ jobs:
       - name: Install Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.24.0'
+          flutter-version: '3.38.5'
 
       - name: Build Flutter Web
         run: flutter build web --base-href /focus_flow/
@@ -40,14 +40,21 @@ jobs:
       - name: Meta (теги образа)
         id: meta
         run: |
-          echo "IMAGE=ghcr.io/${{ github.repository }}/front" >> $GITHUB_OUTPUT
+          echo "IMAGE=ghcr.io/${{ github.repository_owner }}/focusflow_front" >> $GITHUB_OUTPUT 
           echo "TAG_SHA=${{ github.sha }}" >> $GITHUB_OUTPUT
 
+      - name: Normalize image name
+        run: echo "IMAGE_LC=$(echo '${{ steps.meta.outputs.IMAGE }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
+      - name: Export normalized image name
+        id: normalize
+        run: echo "image_lc=${IMAGE_LC}" >> $GITHUB_OUTPUT
+
       - name: Build Docker image
-        run: docker build -t ${{ steps.meta.outputs.IMAGE }}:${{ steps.meta.outputs.TAG_SHA }} .
+        run: docker build -t ${{ env.IMAGE_LC }}:${{ steps.meta.outputs.TAG_SHA }} .
 
       - name: Push SHA tag
-        run: docker push ${{ steps.meta.outputs.IMAGE }}:${{ steps.meta.outputs.TAG_SHA }}
+        run: docker push ${{ env.IMAGE_LC }}:${{ steps.meta.outputs.TAG_SHA }}
 
   deploy_release_server:
     name: Деплой на сервер
@@ -56,7 +63,7 @@ jobs:
 
     steps:
       - name: SSH deploy
-        uses: appleboy/ssh-action@v0.1.15
+        uses: appleboy/ssh-action@v1.0.1
         with:
           host: ${{ secrets.SERVER_RELEASE_HOST }}
           username: ${{ secrets.SERVER_RELEASE_USER }}
@@ -71,4 +78,8 @@ jobs:
 
             docker pull ${IMAGE}:${TAG}
             docker rm -f focusflow_front || true
-            docker run -d --name focusflow_front --restart always -p 8080:8080 ${IMAGE}:${TAG}
+            echo "Stopping containers on port 8080..."
+            docker ps -q --filter "publish=8080" | xargs -r docker stop
+            docker ps -aq --filter "publish=8080" | xargs -r docker rm
+            
+            docker run -d --name focusflow_front --restart always -p 8080:80 ${IMAGE}:${TAG}

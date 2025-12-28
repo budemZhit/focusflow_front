@@ -67,7 +67,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Верная структура проекта ниж")),
+      appBar: AppBar(title: Text("Всё будет гут!")),
       body: LayoutBuilder(
         builder: (context, constraints) {
           if (constraints.maxWidth < 815) {
