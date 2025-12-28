@@ -63,7 +63,7 @@ jobs:
 
     steps:
       - name: SSH deploy
-        uses: appleboy/ssh-action@v0.1.15
+        uses: appleboy/ssh-action@v1.0.293
         with:
           host: ${{ secrets.SERVER_RELEASE_HOST }}
           username: ${{ secrets.SERVER_RELEASE_USER }}
