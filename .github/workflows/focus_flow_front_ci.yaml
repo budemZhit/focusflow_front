@@ -27,6 +27,9 @@ jobs:
         with:
           flutter-version: '3.38.5'
 
+      - name: Pub Get
+        run: flutter pub get
+
       - name: Build Flutter Web
         run: flutter build web --base-href /focus_flow/
 
