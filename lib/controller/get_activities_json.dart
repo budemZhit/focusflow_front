@@ -1,44 +1,19 @@
-Map<String, Map<String, dynamic>> getActivitiesJson(){
-  return {
-    "job": {
-      "Name": "Рабочие",
-      "Color": 0
-    },
-    "week": {
-      "Name": "Выходные",
-      "Color": 1
-    },
-    "holiday": {
-      "Name": "Праздники",
-      "Color": 2
-    },
-    "study": {
-      "Name": "Учёба",
-      "Color": 3
-    },
-    "sport": {
-      "Name": "Спорт",
-      "Color": 4
-    },
-    "family": {
-      "Name": "Семья",
-      "Color": 5
-    },
-    "health": {
-      "Name": "Здоровье",
-      "Color": 6
-    },
-    "travel": {
-      "Name": "Путешествия",
-      "Color": 7
-    },
-    "girl_job": {
-      "Name": "Викины работы",
-      "Color": 8
-    },
-    "girl_week": {
-      "Name": "Викины отдыхи",
-      "Color": 9
-    }
-  };
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+
+import '../model/activities.dart';
+
+Future<Categories> fetchCategories() async {
+  final url = Uri.parse('http://89.111.173.169/calendar/events');
+
+  final response = await http.get(url);
+
+  if (response.statusCode == 200) {
+    final Map<String, dynamic> jsonData = json.decode(response.body);
+    var ressult = Categories.fromJson(jsonData);
+
+    return ressult;
+  } else {
+    throw Exception('Failed to load categories: ${response.statusCode}');
+  }
 }

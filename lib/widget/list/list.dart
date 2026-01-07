@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:focus_flow/controller/add_activities.dart';
 import 'package:focus_flow/controller/get_activities_json.dart';
+import 'package:focus_flow/model/activities.dart';
 import 'package:focus_flow/widget/list/tile.dart';
-import '../../main.dart';
 import 'add_item_dialog.dart';
 
 class ToDoList extends StatefulWidget {
@@ -15,12 +14,12 @@ class ToDoList extends StatefulWidget {
 }
 
 class _ToDoListState extends State<ToDoList> {
-  Map<String, Map<String, dynamic>> json = {}; // проще хранить Map с данными
+  late Future<Categories> futureCategories;
 
   @override
   void initState() {
     super.initState();
-    json = getActivitiesJson();
+    futureCategories = fetchCategories(); // ← Загружаем один раз
   }
 
   void _addItemDialog() {
@@ -28,10 +27,7 @@ class _ToDoListState extends State<ToDoList> {
       context: context,
       onAdd: (key, value) {
         setState(() {
-          json[key] = addActivities(
-            name: value,
-            colorId: json.length % typeColors.length,
-          );
+          futureCategories = fetchCategories(); // обновляем список
         });
       },
     );
@@ -40,31 +36,39 @@ class _ToDoListState extends State<ToDoList> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
-        border: Border(
-          left: BorderSide(
-            color: Colors.grey,
-            width: 1,
-          ),
-          top: BorderSide(
-            color: Colors.grey,
-            width: 1,
-          ),
-        ),
+      decoration: const BoxDecoration(
+        border: Border(left: BorderSide(color: Colors.grey, width: 1)),
       ),
-      child:Scaffold(
-        body: ListView.builder(
-          itemCount: json.length,
-          itemBuilder: (context, index) {
-            String key = json.keys.elementAt(index);
-            String name = json[key]?["Name"] ?? "";
-            int colorIndex = json[key]?["Color"] ?? 0;
+      child: Scaffold(
+        body: FutureBuilder<Categories>(
+          future: futureCategories,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            }
 
-            return CalendarTile(
-              type: key,
-              name: name,
-              backgroundColor: colorIndex,
-              onTap: widget.getColors,
+            if (snapshot.hasError) {
+              return Center(child: Text('Ошибка: ${snapshot.error}'));
+            }
+
+            if (!snapshot.hasData || snapshot.data!.activities == null) {
+              return const Center(child: Text('Нет данных'));
+            }
+
+            final activities = snapshot.data!.activities!;
+
+            return ListView.builder(
+              itemCount: activities.length,
+              itemBuilder: (context, index) {
+                final item = activities[index];
+
+                return CalendarTile(
+                  type: item.key!,
+                  name: item.name!,
+                  backgroundColor: item.color!,
+                  onTap: widget.getColors,
+                );
+              },
             );
           },
         ),
